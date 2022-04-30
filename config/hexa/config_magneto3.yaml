@@ -1,0 +1,102 @@
+initial_robot_configuration:
+  ###############################
+  # Initial robot configuration #
+  ###############################
+  com: [0.00116152, 0.00242687, 0.523579]
+  amom: [0.0, 0.0, 0.0]
+  lmom: [0.0, 0.0, 0.0]
+  eef_ctrl: # percentage of robot weight force (mg)
+    eef_frc_al: [0.0, 0.0, 0.25]
+    eef_frc_ar: [0.0, 0.0, 0.25]
+    eef_frc_bl: [0.0, 0.0, 0.25]
+    eef_frc_br: [0.0, 0.0, 0.25] 
+  eef_pose:
+    # activation(1) /  pos(3) / quat(4)
+    eef_al: [1.0, -0.115756, 0.128916, 0.308927, 0.694241, -0.463383, 0.534127, -0.134213]
+    eef_ar: [1.0, -0.112496, -0.123268, 0.362894, 0.0209755, 0.622585, -0.33526, 0.706788]
+    eef_bl: [1.0, -0.123669, 0.142625, 0.714186, 0.597186, 0.0291732, 0.706568, 0.378523]
+    eef_br: [1.0, -0.11908, -0.134283, 0.660299, 0.198891, 0.685597, -0.205125, 0.669569]
+  eef_env:
+    # fricoeff(1) / magnetic force(3)
+    eef_al: [0.7, 0.0, 0.0, 80]
+    eef_ar: [0.7, 0.0, 0.0, 80]
+    eef_bl: [0.7, 0.0, 0.0, 80]
+    eef_br: [0.7, 0.0, 0.0, 80]
+
+contact_plan:
+  ######################
+  # Contact parameters #
+  ######################
+  num_contacts: [1, 1, 1, 2] # swing foot=br, lowfriction foot=ar
+  # timeini,end(2) /  pos(3) / quat(4) / contacttype(0=free,1=flat,2=full) /friction_coeff(1) / magnetic_force(1) / 
+  eefcnt_al: 
+    cnt0: [0.0, 0.71, -0.115756, 0.128916, 0.308927, 0.694241, -0.463383, 0.534127, -0.134213, 1.0, 0.7, 80]
+  eefcnt_ar: 
+    cnt0: [0.0, 0.71, -0.112496, -0.123268, 0.362894, 0.0209755, 0.622585, -0.33526, 0.706788, 1.0, 0.7, 80]
+  eefcnt_bl: 
+    cnt0: [0.0, 0.71, -0.123669, 0.142625, 0.714186, 0.597186, 0.0291732, 0.706568, 0.378523, 1.0, 0.7, 80]
+  eefcnt_br: 
+    cnt0: [0.0, 0.3, -0.11908, -0.134283, 0.660299, 0.198891, 0.685597, -0.205125, 0.669569, 1.0, 0.7, 80]
+    cnt1: [0.6, 0.71, -0.115568, -0.128577, 0.7077, 0.379942, 0.706435, 0.0307436, 0.596363, 1.0, 0.7, 80]
+
+optimization:
+    #######################
+    # Dynamics parameters #
+    #######################
+    heuristic: SoftConstraint # SoftConstraint  # Types: TrustRegion, SoftConstraint
+    n_act_eefs: 4    
+    external_force: [0.00, 0.00, 0.00]
+    com_goal: [0.000165682, 0.0045881, 0.53683]
+    num_com_viapoints: 0 #TODO:will be depricated
+    com_viapoints:
+        via0: [0.6,    0.022184,   0.014779,   0.150793]
+
+    #####################
+    # Timing parameters #
+    #####################
+    time_step: 0.05
+    time_horizon: 0.71
+    max_time_iterations: 1000
+    max_time_residual_tolerance: 1e-3
+    min_time_residual_improvement: 1e-5
+
+    ############################
+    # Configuration parameters #
+    ############################
+    gravity: 9.81
+    robot_mass: 5.78357    
+    friction_cone: LinearCone  # Types: LinearCone, SocCone #
+    torque_range: [-0.1, 0.1]
+    eef_offset_al: [ 0.0,  0.00,  0.00 ]
+    eef_offset_ar: [ 0.0,  0.00,  0.00 ]
+    eef_offset_bl: [ 0.0,  0.00,  0.00 ]
+    eef_offset_br: [ 0.0,  0.00,  0.00 ]
+    max_eef_lengths: [0.5,  0.5,  0.5,  0.5]
+
+    ####################
+    # Dynamics weights #
+    ####################
+    w_trq_leg:       1.000
+    w_com:           [ 500000,  500000,  500000]
+    w_amom:          [ 0.500,  0.500,  0.500]
+    w_lmom:          [ 0.010,  0.005,  0.001]
+    w_amomd:         [ 2.0,  2.5,  2.0] # rate of amom
+    w_lmomd:         [ 0.015,  0.015,  0.015] # rate of lmom
+    w_amom_final:    [ 100.00,  100.00,  100.00]
+    w_lmom_final:    [ 100.00,  100.00,  100.00]
+    w_com_via:       [ 0.000,  0.000,  0.000]
+    w_frc_leg:       [ 0.01,  0.01,  0.01]
+    w_dfrc_leg:      [ 0.001,  0.001,  0.001] # rate of forces
+    w_amom_track:    [ 1.000,  1.000,  1.000]
+    w_lmom_track:    [ 0.100,  0.100,  0.100]
+
+    #######################
+    # Storage information #
+    #######################
+    store_data: True
+    storage_path: ExperimentData/TEST_PLANNING_RESULT_2.yaml
+
+    ##################
+    # Solver setting #
+    ##################
+    use_default_solver_setting: True

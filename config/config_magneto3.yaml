@@ -1,0 +1,108 @@
+initial_robot_configuration:
+  ###############################
+  # Initial robot configuration #
+  ###############################
+  com: [-0.311759, 0.0038093, 0.615536]
+  amom: [0.0, 0.0, 0.0]
+  lmom: [0.0, 0.0, 0.0]
+  eef_ctrl: # percentage of robot weight force (mg)
+    eef_frc_al: [0.0, 0.0, 0.25]
+    eef_frc_ar: [0.0, 0.0, 0.25]
+    eef_frc_bl: [0.0, 0.0, 0.25]
+    eef_frc_br: [0.0, 0.0, 0.25] 
+  eef_pose:
+    # activation(1) /  pos(3) / quat(4)
+    eef_al: [1.0, -0.252262, 0.185808, 0.314932, 0.806489, -0.187731, 0.440292, -0.347096]
+    eef_ar: [1.0, -0.303468, -0.171428, 0.394624, -0.175601, 0.469691, -0.09607, 0.85984]
+    eef_bl: [1.0, -0.537057, 0.182844, 0.758544, 0.736495, 0.260584, 0.402377, 0.477246]
+    eef_br: [1.0, -0.487316, -0.186229, 0.682151, 0.235473, 0.473098, 0.118598, 0.840634]
+  eef_env:
+    # fricoeff(1) / magnetic force(3)
+    eef_al: [0.5, 0.0, 0.0, 70]
+    eef_ar: [0.3, 0.0, 0.0, 30]
+    eef_bl: [0.5, 0.0, 0.0, 70]
+    eef_br: [0.5, 0.0, 0.0, 70]
+
+contact_plan:
+  ######################
+  # Contact parameters #
+  ######################
+  num_contacts: [1, 1, 1, 2] # swing foot=br, lowfriction foot=ar
+  # timeini,end(2) /  pos(3) / quat(4) / contacttype(0=free,1=flat,2=full) /friction_coeff(1) / magnetic_force(1) / 
+  eefcnt_al: 
+    cnt0: [0.0, 0.66, -0.252262, 0.185808, 0.314932, 0.806489, -0.187731, 0.440292, -0.347096, 1.0, 0.5, 70]
+  eefcnt_ar: 
+    cnt0: [0.0, 0.66, -0.303468, -0.171428, 0.394624, -0.175601, 0.469691, -0.09607, 0.85984, 1.0, 0.3, 30]
+  eefcnt_bl: 
+    cnt0: [0.0, 0.66, -0.537057, 0.182844, 0.758544, 0.736495, 0.260584, 0.402377, 0.477246, 1.0, 0.5, 70]
+  eefcnt_br: 
+    cnt0: [0.0, 0.25, -0.487316, -0.186229, 0.682151, 0.235473, 0.473098, 0.118598, 0.840634, 1.0, 0.5, 70]
+    cnt1: [0.55, 0.66, -0.534923, -0.188499, 0.755166, 0.373637, 0.43373, 0.203939, 0.794155, 1.0, 0.5, 70]
+
+optimization:
+    #######################
+    # Dynamics parameters #
+    #######################
+    heuristic: SoftConstraint # SoftConstraint  # Types: TrustRegion, SoftConstraint
+    n_act_eefs: 4    
+    external_force: [0.00, 0.00, 0.00]
+    com_goal: [-0.317399, 0.0017353, 0.636957]
+    num_com_viapoints: 0 #TODO:will be depricated
+    com_viapoints:
+        via0: [0.6,    0.022184,   0.014779,   0.150793]
+
+    #####################
+    # Timing parameters #
+    #####################
+    time_step: 0.05
+    time_horizon: 0.65
+    max_time_iterations: 1000
+    max_time_residual_tolerance: 1e-3
+    min_time_residual_improvement: 1e-5
+
+    ############################
+    # Configuration parameters #
+    ############################
+    gravity: 9.81
+    robot_mass: 5.78357    
+    friction_cone: LinearCone  # Types: LinearCone, SocCone #
+    torque_range: [-0.1, 0.1]
+    eef_offset_al: [ 0.0,  0.00,  0.00 ]
+    eef_offset_ar: [ 0.0,  0.00,  0.00 ]
+    eef_offset_bl: [ 0.0,  0.00,  0.00 ]
+    eef_offset_br: [ 0.0,  0.00,  0.00 ]
+    # cop_range_al: [-0.02, 0.02, -0.02, 0.02]
+    # cop_range_ar: [-0.02, 0.02, -0.02, 0.02]
+    # cop_range_bl: [-0.02, 0.02, -0.02, 0.02]
+    # cop_range_br: [-0.02, 0.02, -0.02, 0.02]
+    max_eef_lengths: [0.5,  0.5,  0.5,  0.5]
+
+    ####################
+    # Dynamics weights #
+    ####################
+    w_trq_leg:       1.000
+    w_com:           [ 500000,  500000,  500000]
+    w_amom:          [ 0.500,  0.500,  0.500]
+    w_lmom:          [ 0.010,  0.005,  0.001]
+    # w_amomd:         [ 0.100,  0.400,  0.100] # rate of amom
+    w_amomd:         [ 2.0,  2.5,  2.0] # rate of amom
+    w_lmomd:         [ 0.015,  0.015,  0.015] # rate of lmom
+    w_amom_final:    [ 100.00,  100.00,  100.00]
+    w_lmom_final:    [ 100.00,  100.00,  100.00]
+    w_com_via:       [ 0.000,  0.000,  0.000]
+    w_frc_leg:       [ 0.001,  0.001,  0.001]
+    # w_dfrc_leg:      [ 0.000,  0.000,  0.000] # rate of forces
+    w_dfrc_leg:      [ 0.01,  0.01,  0.01] # rate of forces
+    w_amom_track:    [ 1.000,  1.000,  1.000]
+    w_lmom_track:    [ 0.100,  0.100,  0.100]
+
+    #######################
+    # Storage information #
+    #######################
+    store_data: True
+    storage_path: ExperimentData/TEST_PLANNING_RESULT_3.yaml
+
+    ##################
+    # Solver setting #
+    ##################
+    use_default_solver_setting: True

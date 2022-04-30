@@ -1,0 +1,394 @@
+================================================================================
+| Magneto Interface                                                            |
+|     ||--Robot Model                                                          |
+|     ||--Magneto State Estimator                                              |
+|     ||--Magneto State Provider                                               |
+|     ||--Magneto Mpc Control Architecture                                     |
+|         ||--Magneto Task And Force Container                                 |
+|             ||--COM XYZ Task                                                 |
+|             ||--Basic Task LinkRPY5                                          |
+|             ||--Basic Task Joint0                                            |
+|             ||--Basic Task LinkXYZ14                                         |
+|             ||--Basic Task LinkRPY14                                         |
+|             ||--Basic Task LinkXYZ23                                         |
+|             ||--Basic Task LinkRPY23                                         |
+|             ||--Basic Task LinkXYZ32                                         |
+|             ||--Basic Task LinkRPY32                                         |
+|             ||--Basic Task LinkXYZ41                                         |
+|             ||--Basic Task LinkRPY41                                         |
+|             ||--BodyFrame Surface Contact Spec                               |
+|             ||--BodyFrame Surface Contact Spec                               |
+|             ||--BodyFrame Surface Contact Spec                               |
+|             ||--BodyFrame Surface Contact Spec                               |
+|         ||--TrajectoryManager: FootPos                                       |
+|         ||--TrajectoryManager: CoM                                           |
+|         ||--TrajectoryManager: JointPos                                      |
+|         ||--TrajectoryManager: Base Ori                                      |
+|         ||--SmoothTransitionManager                                          |
+|         ||--SmoothTransitionManager                                          |
+|         ||--SmoothTransitionManager                                          |
+|         ||--Magneto CoM Goal Planner                                         |
+|     ||--Robot Model                                                          |
+|         ||--Magneto CoM Hermite Spline Parameter Planner                     |
+|         ||--Magnetic Contact Whole Body Controller                           |
+|             ||--MRWBCC - Min Reaction Whole Body Climbing Control            |
+|             ||--Kin WBC                                                      |
+|         ||--StateEstimator: SlipObserver                                     |
+|         ||--StateMachine: Full Support (Balance)                             |
+|         ||--StateMachine: Transition                                         |
+|         ||--StateMachine: SWING                                              |
+|         ||--StateMachine: Transition                                         |
+|     ||--Magneto Climbing Interrupt Logic                                     |
+================================================================================
+Warning: Material::setShininess() of 250 is above permitted maximum, clamping to 128.
+-------------------------------
+[Full Support Balance] Start
+pc_init(rows: 3, cols: 1)
+-0.266685   0.000000   0.571367  
+pc_goal(rows: 3, cols: 1)
+-0.266241   0.000001   0.570446  
+q_goal(rows: 30, cols: 1)
+-0.300918   0.000000   0.550594  -0.000000   1.036661   0.000000  -0.009115  -0.099983  -1.601236  -0.077626  -0.049578  -0.000000   0.009115  -0.099983  -1.601236  -0.077626   0.049579   0.000000  -0.011022  -0.208816  -1.542110   0.064140  -0.050436  -0.000000   0.011022  -0.208816  -1.542111   0.064140   0.050435  -0.000000  
+ -------------------------------- 
+ MotionCommand
+  * com motion : not given
+  * foot motion : not given
+  * periods : 0
+ -------------------------------- 
+button( )  pressed handled @ Main.cpp
+button( ) pressed handled @ MagnetoWorldNode::enableButtonFlag
+button(s)  pressed handled @ Main.cpp
+button(s) pressed handled @ MagnetoWorldNode::enableButtonFlag
+@@@@ [Climbing Interrupt Logic] button S pressed << SCRIPT MOTION ADDED
+[Full Support Balance] End
+-------------------------------
+[Full Support Balance] Start
+pc_init(rows: 3, cols: 1)
+-0.266683  -0.000004   0.570281  
+pc_goal(rows: 3, cols: 1)
+-0.276833  -0.002444   0.586462  
+q_goal(rows: 30, cols: 1)
+-0.315183  -0.008677   0.570419  -0.087608   1.044923  -0.132055   0.006340  -0.031311  -1.551744   0.332781   0.021964  -0.000000  -0.134227  -0.371708  -1.606506  -0.530525  -0.647015   0.000002  -0.075631  -0.198082  -1.568764  -0.070797  -0.365655  -0.000000   0.103890  -0.371279  -1.495618   0.014615   0.451552   0.000001  
+########################################################
+ dir_com_swing= 0 0 0
+ alpha= 0, beta= -0
+########################################################
+ -------------------------------- 
+ MotionCommand
+  * com motion : not given
+  * foot motion[1] : h=0.05 / pos : (-0.1,0,0), ori : (1,0,0,0)[frame=1]
+  * periods : 0.25 0.05 0.25  0.1
+ -------------------------------- 
+[Full Support Balance] End
+-------------------------------
+[contact transition] Start : 0
+ transition !! - moving_foot_link_idx_=23, moving_foot_idx_1
+[contact transition] End : 0
+-------------------------------
+[SWING] Start
+ setFootPosTrajectory 1, 23
+pos_dev_b(rows: 3, cols: 1)
+-0.100000   0.000000   0.000000  
+foot_pos_ini_(rows: 3, cols: 1)
+-0.254639  -0.184183   0.318752  
+foot_pos_mid(rows: 3, cols: 1)
+-0.239580  -0.184161   0.387841  
+foot_pos_des_(rows: 3, cols: 1)
+-0.308669  -0.184139   0.402899  
+swing_height_ = 0.05
+ swing !! - moving_foot_link_idx_=23, moving_foot_idx_=1
+================================
+  com: [-0.266683, -4.25405e-06, 0.570281]
+  com_goal: [-0.276833, -0.00244405, 0.586462]
+  eef_pose:
+    eef_al: [1.0, -0.256331, 0.185539, 0.321342, 0.811471, -0.182551, 0.443296, -0.334182]
+    eef_ar: [1.0, -0.254639, -0.184183, 0.318752, -0.340531, 0.441459, -0.185325, 0.809202]
+    eef_bl: [1.0, -0.488645, 0.185556, 0.682988, 0.81073, 0.182812, 0.443048, 0.336162]
+    eef_br: [1.0, -0.488541, -0.185859, 0.682784, 0.339639, 0.441914, 0.184723, 0.809466]
+  eef_env:
+    eef_al: [0.5, 0.0, 0.0, 70]
+    eef_ar: [0.3, 0.0, 0.0, 30]
+    eef_bl: [0.5, 0.0, 0.0, 70]
+    eef_br: [0.5, 0.0, 0.0, 70]
+  eefcnt_al: 
+    cnt0: [0.0, TT, -0.256331, 0.185539, 0.321342, 0.811471, -0.182551, 0.443296, -0.334182, 1.0, 0.5, 70]
+  eefcnt_ar: 
+    cnt0: [0.0, TT, -0.254639, -0.184183, 0.318752, -0.340531, 0.441459, -0.185325, 0.809202, 1.0, 0.3, 30]
+  eefcnt_bl: 
+    cnt0: [0.0, TT, -0.488645, 0.185556, 0.682988, 0.81073, 0.182812, 0.443048, 0.336162, 1.0, 0.5, 70]
+  eefcnt_br: 
+    cnt0: [0.0, TT, -0.488541, -0.185859, 0.682784, 0.339639, 0.441914, 0.184723, 0.809466, 1.0, 0.5, 70]
+================================
+-------------------------------
+[contact transition] Start : 1
+ transition !! - moving_foot_link_idx_=23, moving_foot_idx_1
+[contact transition] End : 1
+-------------------------------
+[Full Support Balance] Start
+pc_init(rows: 3, cols: 1)
+-0.276182  -0.000913   0.585186  
+pc_goal(rows: 3, cols: 1)
+-0.288526   0.001334   0.602797  
+q_goal(rows: 30, cols: 1)
+-0.334307  -0.002902   0.584082   0.049105   1.020909  -0.112908  -0.134535   0.068086  -1.580270   0.501906  -0.391809  -0.000002  -0.053537  -0.360936  -1.588482  -0.339727  -0.346928   0.000005   0.072111   0.010225  -1.533672   0.562544   0.177306   0.000000   0.070217  -0.420984  -1.526472  -0.079818   0.403569   0.000002  
+########################################################
+ dir_com_swing= 0 0 0
+ alpha= 0, beta= -0
+########################################################
+ -------------------------------- 
+ MotionCommand
+  * com motion : not given
+  * foot motion[2] : h=0.05 / pos : (-0.1,0,0), ori : (1,0,0,0)[frame=1]
+  * periods : 0.25 0.05 0.25  0.1
+ -------------------------------- 
+[Full Support Balance] End
+-------------------------------
+[contact transition] Start : 0
+ transition !! - moving_foot_link_idx_=32, moving_foot_idx_2
+[contact transition] End : 0
+-------------------------------
+[SWING] Start
+ setFootPosTrajectory 2, 32
+pos_dev_b(rows: 3, cols: 1)
+-0.100000   0.000000   0.000000  
+foot_pos_ini_(rows: 3, cols: 1)
+-0.487157   0.184885   0.683297  
+foot_pos_mid(rows: 3, cols: 1)
+-0.472098   0.184553   0.752385  
+foot_pos_des_(rows: 3, cols: 1)
+-0.541186   0.184221   0.767442  
+swing_height_ = 0.05
+ swing !! - moving_foot_link_idx_=32, moving_foot_idx_=2
+Msg [NameManager::issueNewName] (World::SimpleFrame | world) The name [next_foot] is a duplicate, so it has been renamed to [next_foot(1)]
+================================
+  com: [-0.276182, -0.000912978, 0.585186]
+  com_goal: [-0.288526, 0.00133406, 0.602797]
+  eef_pose:
+    eef_al: [1.0, -0.256232, 0.185552, 0.321175, 0.810705, -0.183436, 0.442707, -0.336332]
+    eef_ar: [1.0, -0.301044, -0.172032, 0.390981, -0.121939, 0.474868, -0.066649, 0.869016]
+    eef_bl: [1.0, -0.487157, 0.184885, 0.683297, 0.82359, 0.126377, 0.466834, 0.296303]
+    eef_br: [1.0, -0.488208, -0.18576, 0.68246, 0.338008, 0.442404, 0.184528, 0.809925]
+  eef_env:
+    eef_al: [0.5, 0.0, 0.0, 70]
+    eef_ar: [0.3, 0.0, 0.0, 30]
+    eef_bl: [0.5, 0.0, 0.0, 70]
+    eef_br: [0.5, 0.0, 0.0, 70]
+  eefcnt_al: 
+    cnt0: [0.0, TT, -0.256232, 0.185552, 0.321175, 0.810705, -0.183436, 0.442707, -0.336332, 1.0, 0.5, 70]
+  eefcnt_ar: 
+    cnt0: [0.0, TT, -0.301044, -0.172032, 0.390981, -0.121939, 0.474868, -0.066649, 0.869016, 1.0, 0.3, 30]
+  eefcnt_bl: 
+    cnt0: [0.0, TT, -0.487157, 0.184885, 0.683297, 0.82359, 0.126377, 0.466834, 0.296303, 1.0, 0.5, 70]
+  eefcnt_br: 
+    cnt0: [0.0, TT, -0.488208, -0.18576, 0.68246, 0.338008, 0.442404, 0.184528, 0.809925, 1.0, 0.5, 70]
+================================
+@@@@@@@@@@@@ SWING CONTACT END @ t=0.241
+-------------------------------
+[contact transition] Start : 1
+ transition !! - moving_foot_link_idx_=32, moving_foot_idx_2
+[contact transition] End : 1
+-------------------------------
+[Full Support Balance] Start
+pc_init(rows: 3, cols: 1)
+-0.288899   0.001778   0.601885  
+pc_goal(rows: 3, cols: 1)
+-0.301871   0.002378   0.617072  
+q_goal(rows: 30, cols: 1)
+-0.360297   0.002982   0.589799  -0.044336   1.045168  -0.085838  -0.181487   0.093185  -1.516251   0.511901  -0.382271  -0.000015   0.031776  -0.067891  -1.678639  -0.686002   0.152053   0.000006   0.104314  -0.028118  -1.581085   0.076004   0.424330  -0.000001  -0.052354  -0.138141  -1.494775   0.290032  -0.158365   0.000017  
+########################################################
+ dir_com_swing=  0.835752  0.193845 -0.513754
+ alpha= 0.742051, beta= -0.742051
+########################################################
+ -------------------------------- 
+ MotionCommand
+  * com motion : not given
+  * foot motion[3] : h=0.05 / pos : (-0.1,0,0), ori : (1,0,0,0)[frame=1]
+  * periods : 0.25 0.05 0.25  0.1
+ -------------------------------- 
+[Full Support Balance] End
+-------------------------------
+[contact transition] Start : 0
+ transition !! - moving_foot_link_idx_=41, moving_foot_idx_3
+[contact transition] End : 0
+-------------------------------
+[SWING] Start
+ setFootPosTrajectory 3, 41
+pos_dev_b(rows: 3, cols: 1)
+-0.100000   0.000000   0.000000  
+foot_pos_ini_(rows: 3, cols: 1)
+-0.487025  -0.186625   0.681345  
+foot_pos_mid(rows: 3, cols: 1)
+-0.471965  -0.186932   0.750432  
+foot_pos_des_(rows: 3, cols: 1)
+-0.541053  -0.187239   0.765489  
+swing_height_ = 0.05
+ swing !! - moving_foot_link_idx_=41, moving_foot_idx_=3
+Msg [NameManager::issueNewName] (World::SimpleFrame | world) The name [next_foot] is a duplicate, so it has been renamed to [next_foot(2)]
+================================
+  com: [-0.288899, 0.00177757, 0.601885]
+  com_goal: [-0.301871, 0.00237845, 0.617072]
+  eef_pose:
+    eef_al: [1.0, -0.254184, 0.185635, 0.317982, 0.809566, -0.184953, 0.442087, -0.33905]
+    eef_ar: [1.0, -0.300874, -0.168395, 0.390712, -0.129022, 0.474202, -0.0704349, 0.868058]
+    eef_bl: [1.0, -0.541748, 0.183367, 0.765853, 0.730692, 0.265575, 0.39914, 0.486051]
+    eef_br: [1.0, -0.487025, -0.186625, 0.681345, 0.24775, 0.466474, 0.127388, 0.83952]
+  eef_env:
+    eef_al: [0.5, 0.0, 0.0, 70]
+    eef_ar: [0.3, 0.0, 0.0, 30]
+    eef_bl: [0.5, 0.0, 0.0, 70]
+    eef_br: [0.5, 0.0, 0.0, 70]
+  eefcnt_al: 
+    cnt0: [0.0, TT, -0.254184, 0.185635, 0.317982, 0.809566, -0.184953, 0.442087, -0.33905, 1.0, 0.5, 70]
+  eefcnt_ar: 
+    cnt0: [0.0, TT, -0.300874, -0.168395, 0.390712, -0.129022, 0.474202, -0.0704349, 0.868058, 1.0, 0.3, 30]
+  eefcnt_bl: 
+    cnt0: [0.0, TT, -0.541748, 0.183367, 0.765853, 0.730692, 0.265575, 0.39914, 0.486051, 1.0, 0.5, 70]
+  eefcnt_br: 
+    cnt0: [0.0, TT, -0.487025, -0.186625, 0.681345, 0.24775, 0.466474, 0.127388, 0.83952, 1.0, 0.5, 70]
+================================
+@@@@@@@@@@@@ SWING CONTACT END @ t=0.24
+-------------------------------
+[contact transition] Start : 1
+ transition !! - moving_foot_link_idx_=41, moving_foot_idx_3
+[contact transition] End : 1
+-------------------------------
+[Full Support Balance] Start
+pc_init(rows: 3, cols: 1)
+-0.300147   0.002063   0.613595  
+pc_goal(rows: 3, cols: 1)
+-0.309757   0.002707   0.632835  
+q_goal(rows: 30, cols: 1)
+-0.358647   0.003078   0.613311   0.065526   1.033438   0.058953  -0.026375  -0.090743  -1.608239  -0.440087  -0.119030  -0.000016   0.066195  -0.040834  -1.583427  -0.171284   0.283313   0.000020   0.003427  -0.147287  -1.530226  -0.055780   0.013631  -0.000007  -0.002064  -0.140668  -1.543336  -0.119212  -0.008599   0.000004  
+########################################################
+ dir_com_swing= 0 0 0
+ alpha= 0, beta= -0
+########################################################
+ -------------------------------- 
+ MotionCommand
+  * com motion : not given
+  * foot motion[0] : h=0.05 / pos : (-0.1,0,0), ori : (1,0,0,0)[frame=1]
+  * periods : 0.25 0.05 0.25  0.1
+ -------------------------------- 
+[Full Support Balance] End
+-------------------------------
+[contact transition] Start : 0
+ transition !! - moving_foot_link_idx_=14, moving_foot_idx_0
+[contact transition] End : 0
+-------------------------------
+[SWING] Start
+ setFootPosTrajectory 0, 14
+pos_dev_b(rows: 3, cols: 1)
+-0.100000   0.000000   0.000000  
+foot_pos_ini_(rows: 3, cols: 1)
+-0.253191   0.183230   0.316563  
+foot_pos_mid(rows: 3, cols: 1)
+-0.238126   0.182555   0.385641  
+foot_pos_des_(rows: 3, cols: 1)
+-0.307208   0.181880   0.400689  
+swing_height_ = 0.05
+ swing !! - moving_foot_link_idx_=14, moving_foot_idx_=0
+Msg [NameManager::issueNewName] (World::SimpleFrame | world) The name [next_foot] is a duplicate, so it has been renamed to [next_foot(3)]
+================================
+  com: [-0.300147, 0.00206289, 0.613595]
+  com_goal: [-0.309757, 0.00270746, 0.632835]
+  eef_pose:
+    eef_al: [1.0, -0.253191, 0.18323, 0.316563, 0.786428, -0.212174, 0.427174, -0.392473]
+    eef_ar: [1.0, -0.290323, -0.168469, 0.374282, -0.164676, 0.470944, -0.0900648, 0.861964]
+    eef_bl: [1.0, -0.541685, 0.183284, 0.76571, 0.731675, 0.264563, 0.399684, 0.484676]
+    eef_br: [1.0, -0.533753, -0.189569, 0.7534, 0.401343, 0.42636, 0.219204, 0.780443]
+  eef_env:
+    eef_al: [0.5, 0.0, 0.0, 70]
+    eef_ar: [0.3, 0.0, 0.0, 30]
+    eef_bl: [0.5, 0.0, 0.0, 70]
+    eef_br: [0.5, 0.0, 0.0, 70]
+  eefcnt_al: 
+    cnt0: [0.0, TT, -0.253191, 0.18323, 0.316563, 0.786428, -0.212174, 0.427174, -0.392473, 1.0, 0.5, 70]
+  eefcnt_ar: 
+    cnt0: [0.0, TT, -0.290323, -0.168469, 0.374282, -0.164676, 0.470944, -0.0900648, 0.861964, 1.0, 0.3, 30]
+  eefcnt_bl: 
+    cnt0: [0.0, TT, -0.541685, 0.183284, 0.76571, 0.731675, 0.264563, 0.399684, 0.484676, 1.0, 0.5, 70]
+  eefcnt_br: 
+    cnt0: [0.0, TT, -0.533753, -0.189569, 0.7534, 0.401343, 0.42636, 0.219204, 0.780443, 1.0, 0.5, 70]
+================================
+-------------------------------
+[contact transition] Start : 1
+ transition !! - moving_foot_link_idx_=14, moving_foot_idx_0
+[contact transition] End : 1
+-------------------------------
+[Full Support Balance] Start
+pc_init(rows: 3, cols: 1)
+-0.307821   0.000496   0.628063  
+pc_goal(rows: 3, cols: 1)
+-0.316687  -0.002672   0.646454  
+q_goal(rows: 30, cols: 1)
+-0.354687  -0.008489   0.631106  -0.039323   1.026130  -0.078842  -0.051626  -0.083338  -1.576834   0.086159  -0.233185  -0.000001  -0.039825  -0.351364  -1.593960  -0.528135  -0.230063   0.000029  -0.022480  -0.160693  -1.551115   0.080218  -0.100097  -0.000016   0.061824  -0.304361  -1.517718  -0.002635   0.282303   0.000009  
+########################################################
+ dir_com_swing= 0 0 0
+ alpha= 0, beta= -0
+########################################################
+ -------------------------------- 
+ MotionCommand
+  * com motion : not given
+  * foot motion[1] : h=0.05 / pos : (-0.1,0,0), ori : (1,0,0,0)[frame=1]
+  * periods : 0.25 0.05 0.25  0.1
+ -------------------------------- 
+[Full Support Balance] End
+-------------------------------
+[contact transition] Start : 0
+ transition !! - moving_foot_link_idx_=23, moving_foot_idx_1
+[contact transition] End : 0
+-------------------------------
+[SWING] Start
+ setFootPosTrajectory 1, 23
+pos_dev_b(rows: 3, cols: 1)
+-0.100000   0.000000   0.000000  
+foot_pos_ini_(rows: 3, cols: 1)
+-0.282335  -0.169099   0.361869  
+foot_pos_mid(rows: 3, cols: 1)
+-0.267266  -0.168960   0.430940  
+foot_pos_des_(rows: 3, cols: 1)
+-0.336343  -0.168822   0.445981  
+swing_height_ = 0.05
+ swing !! - moving_foot_link_idx_=23, moving_foot_idx_=1
+Msg [NameManager::issueNewName] (World::SimpleFrame | world) The name [next_foot] is a duplicate, so it has been renamed to [next_foot(4)]
+================================
+  com: [-0.307821, 0.000496322, 0.628063]
+  com_goal: [-0.316687, -0.00267209, 0.646454]
+  eef_pose:
+    eef_al: [1.0, -0.298982, 0.16646, 0.387758, 0.807101, -0.188237, 0.440729, -0.344837]
+    eef_ar: [1.0, -0.282335, -0.169099, 0.361869, -0.315023, 0.447159, -0.171953, 0.819293]
+    eef_bl: [1.0, -0.539907, 0.183212, 0.762957, 0.732861, 0.263584, 0.400348, 0.482867]
+    eef_br: [1.0, -0.531285, -0.189519, 0.74954, 0.400342, 0.426567, 0.218527, 0.781034]
+  eef_env:
+    eef_al: [0.5, 0.0, 0.0, 70]
+    eef_ar: [0.3, 0.0, 0.0, 30]
+    eef_bl: [0.5, 0.0, 0.0, 70]
+    eef_br: [0.5, 0.0, 0.0, 70]
+  eefcnt_al: 
+    cnt0: [0.0, TT, -0.298982, 0.16646, 0.387758, 0.807101, -0.188237, 0.440729, -0.344837, 1.0, 0.5, 70]
+  eefcnt_ar: 
+    cnt0: [0.0, TT, -0.282335, -0.169099, 0.361869, -0.315023, 0.447159, -0.171953, 0.819293, 1.0, 0.3, 30]
+  eefcnt_bl: 
+    cnt0: [0.0, TT, -0.539907, 0.183212, 0.762957, 0.732861, 0.263584, 0.400348, 0.482867, 1.0, 0.5, 70]
+  eefcnt_br: 
+    cnt0: [0.0, TT, -0.531285, -0.189519, 0.74954, 0.400342, 0.426567, 0.218527, 0.781034, 1.0, 0.5, 70]
+================================
+-------------------------------
+[contact transition] Start : 1
+ transition !! - moving_foot_link_idx_=23, moving_foot_idx_1
+[contact transition] End : 1
+-------------------------------
+[Full Support Balance] Start
+pc_init(rows: 3, cols: 1)
+-0.315964  -0.001700   0.645343  
+pc_goal(rows: 3, cols: 1)
+-0.319367  -0.001765   0.646578  
+q_goal(rows: 30, cols: 1)
+-0.349612  -0.004837   0.631901  -0.020051   1.008879  -0.069730  -0.062169  -0.142671  -1.567360   0.218358  -0.272806  -0.000008  -0.019498  -0.373806  -1.619018  -0.561089  -0.135409   0.000008  -0.014661  -0.159893  -1.569790   0.178401  -0.070396  -0.000015   0.051062  -0.316043  -1.512029   0.174936   0.225729   0.000013  
+ -------------------------------- 
+ MotionCommand
+  * com motion : not given
+  * foot motion : not given
+  * periods : 0
+ -------------------------------- 
+

@@ -1,0 +1,106 @@
+initial_robot_configuration:
+  ###############################
+  # Initial robot configuration #
+  ###############################
+  com: [0.00927264, -0.000105778, 0.498543]
+  amom: [0.0, 0.0, 0.0]
+  lmom: [0.0, 0.0, 0.0]
+  eef_ctrl: # percentage of robot weight force (mg)
+    eef_frc_al: [0.0, 0.0, 0.25]
+    eef_frc_ar: [0.0, 0.0, 0.25]
+    eef_frc_bl: [0.0, 0.0, 0.25]
+    eef_frc_br: [0.0, 0.0, 0.25] 
+  eef_pose:
+    # activation(1) /  pos(3) / quat(4)
+    eef_al: [1.0, -0.115379, 0.128079, 0.312504, 0.703968, -0.407491, 0.577878, -0.066602]
+    eef_ar: [1.0, -0.115993, -0.131642, 0.30494, -0.18427, 0.525755, -0.468233, 0.685845]
+    eef_bl: [1.0, -0.121771, 0.130113, 0.667026, 0.612298, 0.0137358, 0.690657, 0.384572]
+    eef_br: [1.0, -0.119692, -0.127735, 0.664418, 0.447572, 0.654492, -0.0427288, 0.60786]
+  eef_env:
+    # fricoeff(1) / magnetic force(3)
+    eef_al: [0.7, 0.0, 0.0, 80]
+    eef_ar: [0.7, 0.0, 0.0, 80]
+    eef_bl: [0.7, 0.0, 0.0, 80]
+    eef_br: [0.7, 0.0, 0.0, 80]
+
+contact_plan:
+  ######################
+  # Contact parameters #
+  ######################
+  num_contacts: [1, 2, 1, 1] # swing foot=br, lowfriction foot=ar
+  # timeini,end(2) /  pos(3) / quat(4) / contacttype(0=free,1=flat,2=full) /friction_coeff(1) / magnetic_force(1) / 
+  eefcnt_al: 
+    cnt0: [0.0, 0.71, -0.115379, 0.128079, 0.312504, 0.703968, -0.407491, 0.577878, -0.066602, 1.0, 0.7, 80]
+  eefcnt_ar: 
+    cnt0: [0.0, 0.3, -0.115993, -0.131642, 0.30494, -0.18427, 0.525755, -0.468233, 0.685845, 1.0, 0.7, 80]
+    cnt1: [0.6, 0.71, -0.112609, -0.123463, 0.36282, 0.0210488, 0.622618, -0.335185, 0.706792, 1.0, 0.7, 80]
+  eefcnt_bl: 
+    cnt0: [0.0, 0.71, -0.121771, 0.130113, 0.667026, 0.612298, 0.0137358, 0.690657, 0.384572, 1.0, 0.7, 80]
+  eefcnt_br: 
+    cnt0: [0.0, 0.71, -0.119692, -0.127735, 0.664418, 0.447572, 0.654492, -0.0427288, 0.60786, 1.0, 0.7, 80]
+
+optimization:
+    #######################
+    # Dynamics parameters #
+    #######################
+    heuristic: SoftConstraint # SoftConstraint  # Types: TrustRegion, SoftConstraint
+    n_act_eefs: 4    
+    external_force: [0.00, 0.00, 0.00]
+    com_goal: [0.00376553, -0.00235328, 0.512957]
+    num_com_viapoints: 0 #TODO:will be depricated
+    com_viapoints:
+        via0: [0.6,    0.022184,   0.014779,   0.150793]
+
+    #####################
+    # Timing parameters #
+    #####################
+    time_step: 0.05
+    time_horizon: 0.71
+    max_time_iterations: 1000
+    max_time_residual_tolerance: 1e-3
+    min_time_residual_improvement: 1e-5
+
+    ############################
+    # Configuration parameters #
+    ############################
+    gravity: 9.81
+    robot_mass: 5.78357    
+    friction_cone: LinearCone  # Types: LinearCone, SocCone #
+    torque_range: [-0.1, 0.1]
+    eef_offset_al: [ 0.0,  0.00,  0.00 ]
+    eef_offset_ar: [ 0.0,  0.00,  0.00 ]
+    eef_offset_bl: [ 0.0,  0.00,  0.00 ]
+    eef_offset_br: [ 0.0,  0.00,  0.00 ]
+    # cop_range_al: [-0.02, 0.02, -0.02, 0.02]
+    # cop_range_ar: [-0.02, 0.02, -0.02, 0.02]
+    # cop_range_bl: [-0.02, 0.02, -0.02, 0.02]
+    # cop_range_br: [-0.02, 0.02, -0.02, 0.02]
+    max_eef_lengths: [0.5,  0.5,  0.5,  0.5]
+
+    ####################
+    # Dynamics weights #
+    ####################
+    w_trq_leg:       1.000
+    w_com:           [ 500000,  500000,  500000]
+    w_amom:          [ 0.500,  0.500,  0.500]
+    w_lmom:          [ 0.010,  0.005,  0.001]
+    w_amomd:         [ 2.0,  2.5,  2.0] # rate of amom
+    w_lmomd:         [ 0.015,  0.015,  0.015] # rate of lmom
+    w_amom_final:    [ 100.00,  100.00,  100.00]
+    w_lmom_final:    [ 100.00,  100.00,  100.00]
+    w_com_via:       [ 0.000,  0.000,  0.000]
+    w_frc_leg:       [ 0.01,  0.01,  0.01]
+    w_dfrc_leg:      [ 0.001,  0.001,  0.001] # rate of forces
+    w_amom_track:    [ 1.000,  1.000,  1.000]
+    w_lmom_track:    [ 0.100,  0.100,  0.100]
+
+    #######################
+    # Storage information #
+    #######################
+    store_data: True
+    storage_path: ExperimentData/TEST_PLANNING_RESULT_4.yaml
+
+    ##################
+    # Solver setting #
+    ##################
+    use_default_solver_setting: True
