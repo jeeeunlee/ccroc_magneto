@@ -7,32 +7,12 @@
 #include <vector>
 #include "beizier_planner/RobotModel.hpp"
 
-enum class ContactType { FreeContact = 0, FlatContact = 1, FullContact = 2 };
-inline ContactType idToContactType(int cnt_type_id) {
-    ContactType cnt_type = ContactType::FreeContact;
-    switch (cnt_type_id) {
-        case 0: {
-            cnt_type = ContactType::FreeContact;
-            break;
-        }
-        case 1: {
-            cnt_type = ContactType::FlatContact;
-            break;
-        }
-        case 2: {
-            cnt_type = ContactType::FullContact;
-            break;
-        }
-    }
-    return cnt_type
-}
-
 class ContactState {
    public:
     ContactState()
         : timeIni(0.),
           timeEnd(0.),
-          contactType(ContactType::FreeContact),
+          contactType(0),
           position(Eigen::Vector3d::Zero()),
           orientation(Eigen::Quaternion<double>::Identity()),
           fricCoeff(1.0),
@@ -45,7 +25,7 @@ class ContactState {
         timeEnd = cs(1);        
         position = cs.segment<3>(2);
         orientation = Eigen::Quaternion<double>(cs[5], cs[6], cs[7], cs[8]);
-        contactType = idToContactType(static_cast<int>(cs(9)));
+        contactType = (static_cast<int>(cs(9)));
         fricCoeff = cs(10);
         frcMag = Eigen::Vector3d::Zero();
         frcMag(2) = cs(11);
@@ -66,7 +46,7 @@ class ContactState {
     }
 
     Eigen::Vector3d position;
-    ContactType contactType;
+    int contactType;
     double timeIni, timeEnd;
     Eigen::Quaternion<double> orientation;
     // added for magneto
@@ -81,7 +61,7 @@ class ContactStateSequence {
 
     std::string toString() const {
         std::stringstream text;
-        for (int eff_id = 0; eff_id < CentroidModel::numEEf; eff_id++) {
+        for (int eff_id = 0; eff_id < RobotModel::numEEf; eff_id++) {
             text << "eff_id " << eff_id << "\n";
             for (int cnt_id = 0; cnt_id < eEfContacts[eff_id].size();
                  cnt_id++) {
@@ -97,5 +77,5 @@ class ContactStateSequence {
     }
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    std::array<std::vector<ContactState>, CentroidModel::numEEf> eEfContacts;
+    std::array<std::vector<ContactState>, RobotModel::numEEf> eEfContacts;
 };
