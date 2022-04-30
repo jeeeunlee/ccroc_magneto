@@ -3,6 +3,7 @@
 #include "my_util/IOUtilities.hpp"
 #include "beizier_planner/RobotModel.hpp"
 #include "beizier_planner/ContactState.hpp"
+#include "beizier_planner/BeizierUtilities.hpp"
 #include <Configuration.h>
 
 using namespace myUtils;
@@ -29,9 +30,36 @@ class BeizierPlannerParameter{
 
 class BeizierPlanner{
   public:
-  BeizierPlanner(BeizierPlannerParameter *_param);
-  ~BeizierPlanner();
-  void DoPlan();
+    BeizierPlanner(BeizierPlannerParameter *_param);
+    ~BeizierPlanner();
+    
+    void DoPlan();    
+
+
   protected:
-  BeizierPlannerParameter* mPlanParam;
+    void initialize();
+
+    void setBeizierCurve();
+    void buildAMatrices();
+    void buildFrictionCones();
+    void solveDD();
+    void buildInequalities();
+    
+
+  protected:
+    BeizierPlannerParameter* mPlanParam;
+    
+    std::array<Eigen::MatrixXd, 3> ASequence_;
+    std::array<Eigen::MatrixXd, 3> FricConeSequence_;
+    std::array<Eigen::VectorXd, 3> FmSequence_;
+    std::array<Eigen::MatrixXd, 3> UavSequence_;
+
+    int moving_eef_id_;
+
+    wBeizier Pws_;
+    std::array<wBeizier, 3> PwsSequence_;
+    std::array<double, 4> timeSequence_;
+
+
+
 };

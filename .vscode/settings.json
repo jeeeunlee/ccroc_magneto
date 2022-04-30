@@ -65,6 +65,9 @@
         "set": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "dense": "cpp"
+        "dense": "cpp",
+        "notify": "cpp",
+        "matrixd": "cpp",
+        "matrixf": "cpp"
     }
 }

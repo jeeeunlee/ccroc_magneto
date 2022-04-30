@@ -78,27 +78,138 @@ void BeizierPlannerParameter::UpdateTrajectoryPlan(YAML::Node planner_cfg){
 
 BeizierPlanner::BeizierPlanner(BeizierPlannerParameter *_param) {
   mPlanParam = _param;
+  initialize();
 }
 
 BeizierPlanner::~BeizierPlanner() {}
 
+
+void BeizierPlanner::initialize(){
+
+  // find swing foot
+  moving_eef_id_ = 0;
+  for (int eef_id=0; eef_id<RobotModel::numEEf; eef_id++){
+    if( mPlanParam->contactsPerEndeff_[eef_id] == 2 ) moving_eef_id_ = eef_id;
+  }
+
+  // set timeset
+  double t0 = mPlanParam->contactSequence_.eEfContacts[moving_eef_id_][0].timeIni;
+  double t1 = mPlanParam->contactSequence_.eEfContacts[moving_eef_id_][0].timeEnd;
+  double t2 = mPlanParam->contactSequence_.eEfContacts[moving_eef_id_][1].timeIni;
+  double t3 = mPlanParam->timeHorizon_;
+  // double t3 = mPlanParam->contactSequence_.eEfContacts[moving_eef_id_][1].timeEnd;
+  timeSequence_ = {t0,t1,t2,t3};
+}
+
 void BeizierPlanner::DoPlan(){
+  
+  // 
+  setBeizierCurve();
+  // update ASequence_
+  buildAMatrices();
+  //update FricConeSequence_, FmSequence_
+  buildFrictionCones();
+  // solve DD
+  solveDD();
+  // buildInequalities
+  buildInequalities();
 
 }
 
+void BeizierPlanner::setBeizierCurve(){
+  Pws_ = wBeizier(mPlanParam->comStart_, mPlanParam->comGoal_);  
+  Pws_.decompose(timeSequence_, PwsSequence_); 
+}
 
 void BeizierPlanner::buildAMatrices(){
+  
+  // initialize
+  ASequence_[0] = Eigen::MatrixXd::Zero(6,3*RobotModel::numEEf); //full
+  ASequence_[1] = Eigen::MatrixXd::Zero(6,3*(RobotModel::numEEf-1)); //swing
+  ASequence_[2] = Eigen::MatrixXd::Zero(6,3*RobotModel::numEEf); //full
 
+  Eigen::Vector3d pi;
+  Eigen::Matrix3d Ri;
+  // just assume 3 contact sequence (full->swing->full)
+  int tmp_id=0;
+  for (int eef_id=0; eef_id<RobotModel::numEEf; eef_id++){
+    
+    pi = mPlanParam->contactSequence_.eEfContacts[eef_id][0].position;
+    Ri = mPlanParam->contactSequence_.eEfContacts[eef_id][0].orientation.toRotationMatrix();
+
+    // seq 1 (full)
+    ASequence_[0].block(0,3*eef_id,3,3 ) = Ri;
+    ASequence_[0].block(3,3*eef_id,3,3 ) = skew(pi)*Ri;
+    // seq 2 (swing)
+    if(moving_eef_id_ != eef_id){
+      ASequence_[1].block(0,3*tmp_id,3,3 ) = Ri;
+      ASequence_[1].block(3,3*tmp_id,3,3 ) = skew(pi)*Ri;
+      tmp_id++;
+    }
+    // seq 3 (full)
+    if(moving_eef_id_ == eef_id){
+      pi = mPlanParam->contactSequence_.eEfContacts[eef_id][1].position;
+      Ri = mPlanParam->contactSequence_.eEfContacts[eef_id][1].orientation.toRotationMatrix();
+    }
+    ASequence_[2].block(0,3*eef_id,3,3 ) = Ri;
+    ASequence_[2].block(3,3*eef_id,3,3 ) = skew(pi)*Ri;
+
+  }
 }
 
 void BeizierPlanner::buildFrictionCones(){
-  
+  int fricConeDim = 5;
+    // initialize
+  FricConeSequence_[0] = Eigen::MatrixXd::Zero(fricConeDim*RobotModel::numEEf,3*RobotModel::numEEf); //full
+  FricConeSequence_[1] = Eigen::MatrixXd::Zero(fricConeDim*(RobotModel::numEEf-1),3*(RobotModel::numEEf-1)); //swing
+  FricConeSequence_[2] = Eigen::MatrixXd::Zero(fricConeDim*RobotModel::numEEf,3*RobotModel::numEEf); //full
+
+  FmSequence_[0] = Eigen::VectorXd::Zero(3*RobotModel::numEEf);
+  FmSequence_[1] = Eigen::VectorXd::Zero(3*(RobotModel::numEEf-1));
+  FmSequence_[2] = Eigen::VectorXd::Zero(3*RobotModel::numEEf);
+
+  double mu;
+  Eigen::Vector3d fm;
+  // just assume 3 contact sequence (full->swing->full)
+  int tmp_id=0;
+  for (int eef_id=0; eef_id<RobotModel::numEEf; eef_id++){
+    
+    mu = mPlanParam->contactSequence_.eEfContacts[eef_id][0].fricCoeff;
+    fm = mPlanParam->contactSequence_.eEfContacts[eef_id][0].frcMag;
+
+
+    // seq 1 (full)
+    FricConeSequence_[0].block(0,3*eef_id,fricConeDim,3 ) = FricCone(mu);
+    FmSequence_[0].segment(3*eef_id, 3) = fm;
+
+    // seq 2 (swing)
+    if(moving_eef_id_ != eef_id){
+      FricConeSequence_[1].block(0,3*tmp_id,fricConeDim,3 ) = FricCone(mu);
+      FmSequence_[1].segment(3*eef_id, 3) = fm;
+      tmp_id++;
+    }
+    // seq 3 (full)
+    if(moving_eef_id_ == eef_id){
+      mu = mPlanParam->contactSequence_.eEfContacts[eef_id][1].fricCoeff;
+      fm = mPlanParam->contactSequence_.eEfContacts[eef_id][1].frcMag;
+    }
+    FricConeSequence_[2].block(0,3*eef_id,fricConeDim,3 ) = FricCone(mu);
+    FmSequence_[2].segment(3*eef_id, 3) = fm;
+  }
 }
 
 void BeizierPlanner::solveDD(){
   
+  for(int cid(0); cid<3; cid++){
+    // U -> V
+    V = FricConeSequence_[cid];
+
+    // A*V -> Uav
+    UavSequence_[cid] = (ASequence_[cid]*V);
+  }  
 }
 
 void BeizierPlanner::buildInequalities(){
+
   
 }
