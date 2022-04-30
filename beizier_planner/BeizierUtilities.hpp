@@ -8,7 +8,7 @@ class BeizierCurves{
         BeizierCurves();
         ~BeizierCurves() {};
 
-        void DeCasteljauDecomposition()
+        void DeCasteljauDecomposition();
 
 
     public:
