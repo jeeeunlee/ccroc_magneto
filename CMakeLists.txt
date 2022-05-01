@@ -11,6 +11,7 @@ include_directories("${PROJECT_SOURCE_DIR}")
 add_subdirectory(beizier_planner)
 add_subdirectory(my_geometry)
 add_subdirectory(my_yaml)
+add_subdirectory(my_qpsolver)
 add_subdirectory(my_util)
 
 add_executable(main "main_magneto.cpp")

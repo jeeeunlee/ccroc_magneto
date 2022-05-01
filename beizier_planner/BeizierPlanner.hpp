@@ -2,6 +2,7 @@
 #pragma GCC diagnostic ignored "-Wunused-variable"
 
 #include "my_util/IOUtilities.hpp"
+#include "my_qpsolver/QuadProgSolver.hpp"
 #include "beizier_planner/RobotModel.hpp"
 #include "beizier_planner/ContactState.hpp"
 #include "beizier_planner/BeizierUtilities.hpp"
@@ -46,10 +47,13 @@ class BeizierPlanner{
     void solveDD();
     void buildInequalities();
     void solveQP();
+    void test();
     
 
   protected:
     cTimer timer_;
+    QuadProgSolver* qp_solver_;
+    
 
     BeizierPlannerParameter* mPlanParam;
     

@@ -44,6 +44,24 @@ class BeizierCurves{
         std::array<T, Dim+1> coeffs_;
 };
 
+class cBeizier{
+public:
+    cBeizier();   
+    cBeizier(const Eigen::Vector3d &com_init,
+            const Eigen::Vector3d &com_goal);
+
+    Eigen::VectorXd getC(double t, const Eigen::Vector3d &y);
+
+    // void decompose(const std::vector<double> &timeSequence, 
+    //                 std::vector<wBeizier> &PwsSequence);
+
+    ~cBeizier(){};
+
+    public:
+        BeizierCurves<Eigen::MatrixXd, 6> by_;
+        BeizierCurves<Eigen::VectorXd, 6> bs_;
+};
+
 class wBeizier{
     public:
     wBeizier();   

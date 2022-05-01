@@ -31,9 +31,36 @@ void BeizierCurves<T,Dim>::DeCasteljauDecomposition(double t0,
 
 template<class T, unsigned int Dim>
 double BeizierCurves<T,Dim>::getBeizierT(int i, double t){
-
     return (double)(beizier_utils::combination(Dim,i))*
-                std::pow(t, i)*std::pow(t,Dim-i);    
+                std::pow(t, i)*std::pow(1-t,Dim-i);    
+}
+
+cBeizier::cBeizier(){
+    for(int i(0); i<7; ++i){
+        by_.coeffs_[i] = Eigen::MatrixXd::Zero(3,3);
+        bs_.coeffs_[i] = Eigen::VectorXd::Zero(3);
+    }
+}
+
+cBeizier::cBeizier(const Eigen::Vector3d &com_init,
+            const Eigen::Vector3d &com_goal):cBeizier(){
+    
+    bs_.coeffs_[0] = com_init;
+    bs_.coeffs_[1] = com_init;
+    bs_.coeffs_[2] = com_init;
+    bs_.coeffs_[4] = com_goal;
+    bs_.coeffs_[5] = com_goal;
+    bs_.coeffs_[6] = com_goal;
+
+    by_.coeffs_[3] = Eigen::MatrixXd::Identity(3,3);
+}
+
+Eigen::VectorXd cBeizier::getC(double t, const Eigen::Vector3d &y){
+    Eigen::VectorXd c = Eigen::VectorXd::Zero(3);
+    for(int i(0); i<7; ++i){
+        c = c + by_.getBeizierT(i,t)*(by_.coeffs_[i]*y + bs_.coeffs_[i]);
+    }
+    return c;
 }
 
 wBeizier::wBeizier(){
@@ -135,11 +162,6 @@ void wBeizier::decompose(const std::array<double, 4> &timeSequence,
     tmp.bs_.DeCasteljauDecomposition(t2, PwsSequence[1].bs_, PwsSequence[2].bs_);
 
 }
-
-// void wBeizier::decompose(const std::vector<double> &timeSequence, 
-//                         std::vector<wBeizier> &PwsSequence){
-    
-// }
 
 namespace beizier_utils{
 int factorial(int n) {

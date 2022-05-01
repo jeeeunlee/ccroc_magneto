@@ -81,6 +81,7 @@ void BeizierPlannerParameter::UpdateTrajectoryPlan(YAML::Node planner_cfg){
 
 BeizierPlanner::BeizierPlanner(BeizierPlannerParameter *_param) {
   mPlanParam = _param;
+  qp_solver_ = new QuadProgSolver();
   initialize();
 }
 
@@ -131,6 +132,8 @@ void BeizierPlanner::DoPlan(){
   timer_.print_interval();
 
   solveQP();
+  timer_.print_interval();
+  timer_.print();
 
 
 }
@@ -237,13 +240,22 @@ void BeizierPlanner::solveDD(){
     int n_fc = FricConeSequence_[cid].rows();
     bool b_poly_Uf = poly_1.setHrep(FricConeSequence_[cid], Eigen::VectorXd::Zero(n_fc));
     Eigen::MatrixXd Vf = (poly_1.vrep().first).transpose();
+    // std::cout<<"U->V"<<std::endl;
+    // poly_1.printHrep();
+    // poly_1.printVrep();
     // myUtils::pretty_print(Vf, std::cout, "Vf");
 
     // A*V -> Uav
     Eigen::MatrixXd Vst =  (ASequence_[cid]*Vf);
     bool b_poly_Vst = poly_2.setVrep( Vst.transpose(), Eigen::VectorXd::Zero(Vst.cols()) );
     UavSequence_[cid] = poly_2.hrep().first;
+    // std::cout<<"AV->U_(AV)"<<std::endl;    
+    // poly_2.printVrep();
+    // poly_2.printHrep();
     // myUtils::pretty_print(UavSequence_[cid], std::cout, "UavSequence_[cid]");
+    // std::cout<<"======================================="<<std::endl;
+    // Eigen::MatrixXd UavA = UavSequence_[cid]*ASequence_[cid];
+    // myUtils::pretty_print(UavA, std::cout, "Uav*A");
   }  
 }
 
@@ -272,40 +284,80 @@ void BeizierPlanner::buildInequalities(){
 }
 
 void BeizierPlanner::solveQP(){
+
+  Eigen::MatrixXd _H, _Aieq;
+  Eigen::VectorXd _f, _bieq, y;
   // find y
+  // 0.5(y-cmid)'(y-cmid) = 0.5y'y - cmid'y
   // such that H_y <= h_
 
-  // Eigen::Vector3d y = 0.5*(mPlanParam->comStart_ + mPlanParam->comGoal_);
+  _H = Eigen::MatrixXd::Identity(3,3);
+  _f = -0.5*(mPlanParam->comStart_ + mPlanParam->comGoal_);
+
+
+  qp_solver_->setProblem(_H,_f,H_,h_);
+  qp_solver_->solveProblem(y);
+
+  std::cout<<" cmid =" << -_f.transpose() << std::endl;
+  std::cout<<" y=" << y.transpose() << std::endl;
+
+}
+
+
+void BeizierPlanner::test(){
+
+  Eigen::Vector3d y = 0.5*(mPlanParam->comStart_ + mPlanParam->comGoal_);
   // Eigen::Vector3d y = 0.3*mPlanParam->comStart_ + 0.7*mPlanParam->comGoal_;
   // Eigen::Vector3d y = mPlanParam->comStart_;
-  Eigen::Vector3d y = Eigen::Vector3d::Zero();
+  // Eigen::Vector3d y = Eigen::Vector3d::Zero();
   
   
-  // Eigen::VectorXd Hy = H_*y;
-
-  // for(int i(0); i<h_.size(); ++i){
+  Eigen::VectorXd Hy = H_*y;
+  for(int i(0); i<h_.size(); ++i){
     // std::cout<<" Hy= "<<Hy[i]<< " < " << h_[i] << std::endl;    
-    // if(Hy[i] > h_[i])
-    //   std::cout<<" Hy= "<<Hy[i]<< " < " << h_[i] << std::endl;    
-  // }
+    if(Hy[i] > h_[i])
+      std::cout<<" Hy= "<<Hy[i]<< " > " << h_[i] << std::endl;    
+  }
+
+  Eigen::MatrixXd _H, _Aieq, _Aeq;
+  Eigen::VectorXd _f, _bieq, _beq, Fc;
 
   Eigen::VectorXd w, htmp;
   double alpha = mPlanParam->robotMass_/mPlanParam->timeHorizon_/mPlanParam->timeHorizon_;
   double t=0.;
-  for(int cid(0); cid<3; cid++){
+  int cid = 1;{
+  // for(int cid(0); cid<3; cid++){
     t=0.;
-    for(int tt(0); tt<10; ++tt){
+
+
+    // check if Fc s.t. AFc = w-AFm , UFc<0?
     
+    int n = FmSequence_[cid].size();
+    _H = Eigen::MatrixXd::Identity(n,n);
+    _f = Eigen::VectorXd::Zero(n);
+    _Aeq = ASequence_[cid];
+    
+    _Aieq = FricConeSequence_[cid];
+    _bieq = Eigen::VectorXd::Zero(FricConeSequence_[cid].rows());
+
+    std::cout.precision(4);
+    while(t<1.0){
       w = alpha* PwsSequence_[cid].getW(t,y);
-      std::cout<<tt<<" w = " << w.transpose()<< std::endl;
-      std::cout<<tt<<" w-afm = " << (w - ASequence_[cid]* FmSequence_[cid]).transpose()<< std::endl;
+      std::cout<<t<<" w-afm = " << (w - ASequence_[cid]* FmSequence_[cid]).transpose()<< std::endl;
       htmp = UavSequence_[cid]* (w - ASequence_[cid]* FmSequence_[cid]);
-      t = t+0.1;
+      
 
       for(int i(0); i<htmp.size(); ++i){
         if(htmp[i] > 0.0)
-          std::cout<<tt<<" htmp["<<i<< "]=" << htmp[i] << std::endl;
-      }
+          std::cout<<t<<" htmp["<<i<< "]=" << htmp[i] << std::endl;
+      }      
+
+      _beq = (w - ASequence_[cid]* FmSequence_[cid]);    
+      qp_solver_->setProblem(_H,_f,_Aieq,_bieq,_Aeq,_beq);
+      qp_solver_->solveProblem(Fc);
+      std::cout<<t<<" Fc["<<t<< "]=" << Fc.transpose() << std::endl;
+
+      t = t+0.1;
     }
   }
 
