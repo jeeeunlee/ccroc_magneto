@@ -1,6 +1,7 @@
 #include "beizier_planner/BeizierPlanner.hpp"
+#include <my_geometry/include/my_geometry/Polytope/Polytope.h>
 
-#include <ctime>
+
 
 using namespace myUtils;
 
@@ -43,9 +44,9 @@ void BeizierPlannerParameter::UpdateContactPlan(YAML::Node cnt_cfg){
         contactSequence_.eEfContacts[eef_id].push_back(
           ContactState(_cs_tmp));
 
-        std::cout << "c_id : " << c_id << std::endl;
-        std::cout << contactSequence_.eEfContacts[eef_id][c_id]
-                  << std::endl;
+        // std::cout << "c_id : " << c_id << std::endl;
+        // std::cout << contactSequence_.eEfContacts[eef_id][c_id]
+        //           << std::endl;
       }
     }
   } catch (std::runtime_error& e) {
@@ -65,7 +66,9 @@ void BeizierPlannerParameter::UpdateTrajectoryPlan(YAML::Node planner_cfg){
     readParameter(optim_cfg, "n_act_eefs", numActEEfs_);
 
     readParameter(optim_cfg, "robot_mass", robotMass_);
-    readParameter(optim_cfg, "gravity", gravity_);   
+    readParameter(optim_cfg, "gravity", gravity_); 
+
+    gravVec_ << 0., 0., -gravity_;  
       
     
   } catch (std::runtime_error& e) {
@@ -91,6 +94,7 @@ void BeizierPlanner::initialize(){
   for (int eef_id=0; eef_id<RobotModel::numEEf; eef_id++){
     if( mPlanParam->contactsPerEndeff_[eef_id] == 2 ) moving_eef_id_ = eef_id;
   }
+  std::cout<<"moving_eef_id_ = "<< moving_eef_id_ <<std::endl;
 
   // set timeset
   double t0 = mPlanParam->contactSequence_.eEfContacts[moving_eef_id_][0].timeIni;
@@ -99,25 +103,40 @@ void BeizierPlanner::initialize(){
   double t3 = mPlanParam->timeHorizon_;
   // double t3 = mPlanParam->contactSequence_.eEfContacts[moving_eef_id_][1].timeEnd;
   timeSequence_ = {t0,t1,t2,t3};
+  std::cout<<"timeSequence_ = "<< t0 <<","<<t1<<","<<t2<<","<<t3<<std::endl;
 }
 
 void BeizierPlanner::DoPlan(){
   
-  // 
+  //  
+
+  timer_.reset();
   setBeizierCurve();
+  timer_.print_interval();
+
   // update ASequence_
   buildAMatrices();
+  timer_.print_interval();
+
   //update FricConeSequence_, FmSequence_
   buildFrictionCones();
+  timer_.print_interval();
+
   // solve DD
   solveDD();
+  timer_.print_interval();
+
   // buildInequalities
   buildInequalities();
+  timer_.print_interval();
+
+  solveQP();
+
 
 }
 
 void BeizierPlanner::setBeizierCurve(){
-  Pws_ = wBeizier(mPlanParam->comStart_, mPlanParam->comGoal_);  
+  Pws_ = wBeizier(mPlanParam->comStart_, mPlanParam->comGoal_, mPlanParam->gravVec_, mPlanParam->timeHorizon_);
   Pws_.decompose(timeSequence_, PwsSequence_); 
 }
 
@@ -139,11 +158,11 @@ void BeizierPlanner::buildAMatrices(){
 
     // seq 1 (full)
     ASequence_[0].block(0,3*eef_id,3,3 ) = Ri;
-    ASequence_[0].block(3,3*eef_id,3,3 ) = skew(pi)*Ri;
+    ASequence_[0].block(3,3*eef_id,3,3 ) = beizier_utils::skew(pi)*Ri;
     // seq 2 (swing)
     if(moving_eef_id_ != eef_id){
       ASequence_[1].block(0,3*tmp_id,3,3 ) = Ri;
-      ASequence_[1].block(3,3*tmp_id,3,3 ) = skew(pi)*Ri;
+      ASequence_[1].block(3,3*tmp_id,3,3 ) = beizier_utils::skew(pi)*Ri;
       tmp_id++;
     }
     // seq 3 (full)
@@ -152,9 +171,13 @@ void BeizierPlanner::buildAMatrices(){
       Ri = mPlanParam->contactSequence_.eEfContacts[eef_id][1].orientation.toRotationMatrix();
     }
     ASequence_[2].block(0,3*eef_id,3,3 ) = Ri;
-    ASequence_[2].block(3,3*eef_id,3,3 ) = skew(pi)*Ri;
-
+    ASequence_[2].block(3,3*eef_id,3,3 ) = beizier_utils::skew(pi)*Ri;
   }
+
+  // std::cout<<"ASequence_[0]="<<ASequence_[0]<<std::endl;
+  // std::cout<<"ASequence_[1]="<<ASequence_[1]<<std::endl;
+  // std::cout<<"ASequence_[2]="<<ASequence_[2]<<std::endl;
+
 }
 
 void BeizierPlanner::buildFrictionCones(){
@@ -179,13 +202,13 @@ void BeizierPlanner::buildFrictionCones(){
 
 
     // seq 1 (full)
-    FricConeSequence_[0].block(0,3*eef_id,fricConeDim,3 ) = FricCone(mu);
-    FmSequence_[0].segment(3*eef_id, 3) = fm;
+    FricConeSequence_[0].block(fricConeDim*eef_id,3*eef_id,fricConeDim,3 ) = beizier_utils::friccone(mu);
+    FmSequence_[0].segment(3*eef_id, 3) = -fm;
 
     // seq 2 (swing)
     if(moving_eef_id_ != eef_id){
-      FricConeSequence_[1].block(0,3*tmp_id,fricConeDim,3 ) = FricCone(mu);
-      FmSequence_[1].segment(3*eef_id, 3) = fm;
+      FricConeSequence_[1].block(fricConeDim*tmp_id,3*tmp_id,fricConeDim,3 ) = beizier_utils::friccone(mu);
+      FmSequence_[1].segment(3*tmp_id, 3) = -fm;
       tmp_id++;
     }
     // seq 3 (full)
@@ -193,23 +216,99 @@ void BeizierPlanner::buildFrictionCones(){
       mu = mPlanParam->contactSequence_.eEfContacts[eef_id][1].fricCoeff;
       fm = mPlanParam->contactSequence_.eEfContacts[eef_id][1].frcMag;
     }
-    FricConeSequence_[2].block(0,3*eef_id,fricConeDim,3 ) = FricCone(mu);
-    FmSequence_[2].segment(3*eef_id, 3) = fm;
+    FricConeSequence_[2].block(fricConeDim*eef_id,3*eef_id,fricConeDim,3 ) = beizier_utils::friccone(mu);
+    FmSequence_[2].segment(3*eef_id, 3) = -fm;
   }
+
+  // std::cout<<"FricConeSequence_[0]="<<FricConeSequence_[0]<<std::endl;
+  // std::cout<<"FricConeSequence_[1]="<<FricConeSequence_[1]<<std::endl;
+  // std::cout<<"FricConeSequence_[2]="<<FricConeSequence_[2]<<std::endl;
+
+  // std::cout<<"FmSequence_[0]="<<FmSequence_[0]<<std::endl;
+  // std::cout<<"FmSequence_[1]="<<FmSequence_[1]<<std::endl;
+  // std::cout<<"FmSequence_[2]="<<FmSequence_[2]<<std::endl;
 }
 
 void BeizierPlanner::solveDD(){
   
+  Polyhedron poly_1, poly_2;
   for(int cid(0); cid<3; cid++){
     // U -> V
-    V = FricConeSequence_[cid];
+    int n_fc = FricConeSequence_[cid].rows();
+    bool b_poly_Uf = poly_1.setHrep(FricConeSequence_[cid], Eigen::VectorXd::Zero(n_fc));
+    Eigen::MatrixXd Vf = (poly_1.vrep().first).transpose();
+    // myUtils::pretty_print(Vf, std::cout, "Vf");
 
     // A*V -> Uav
-    UavSequence_[cid] = (ASequence_[cid]*V);
+    Eigen::MatrixXd Vst =  (ASequence_[cid]*Vf);
+    bool b_poly_Vst = poly_2.setVrep( Vst.transpose(), Eigen::VectorXd::Zero(Vst.cols()) );
+    UavSequence_[cid] = poly_2.hrep().first;
+    // myUtils::pretty_print(UavSequence_[cid], std::cout, "UavSequence_[cid]");
   }  
 }
 
 void BeizierPlanner::buildInequalities(){
+  // initialize
+  H_ = Eigen::MatrixXd::Zero(0,0);
+  h_ = Eigen::VectorXd::Zero(0);
+
+  double alpha = mPlanParam->robotMass_/mPlanParam->timeHorizon_/mPlanParam->timeHorizon_;
+  // std::cout<<"alpha = "<< alpha<<std::endl;
+
+  // for(int cid(0); cid<3; cid++) {
+    int cid = 1;{
+    for( auto  &ycoeff : PwsSequence_[cid].by_.coeffs_){
+      H_ = beizier_utils::vStack( H_, UavSequence_[cid] * ycoeff*alpha );
+    }
+    for( auto  &scoeff : PwsSequence_[cid].bs_.coeffs_){      
+      h_ = beizier_utils::vStack( h_, UavSequence_[cid] * (- scoeff*alpha + ASequence_[cid]* FmSequence_[cid] ));
+      // std::cout<<"scoeff*alpha = "<< scoeff*alpha<<std::endl;
+    }
+    // std::cout<<"ASequence_[cid]* FmSequence_[cid] = "<<ASequence_[cid]* FmSequence_[cid]<<std::endl;
+  }
+
+  // std::cout<<"H_ size = "<<H_.rows() << ", "<<H_.cols()<<std::endl;
+  // std::cout<<"h_ size = "<<h_.size() <<std::endl;
+}
+
+void BeizierPlanner::solveQP(){
+  // find y
+  // such that H_y <= h_
+
+  // Eigen::Vector3d y = 0.5*(mPlanParam->comStart_ + mPlanParam->comGoal_);
+  // Eigen::Vector3d y = 0.3*mPlanParam->comStart_ + 0.7*mPlanParam->comGoal_;
+  // Eigen::Vector3d y = mPlanParam->comStart_;
+  Eigen::Vector3d y = Eigen::Vector3d::Zero();
+  
+  
+  // Eigen::VectorXd Hy = H_*y;
+
+  // for(int i(0); i<h_.size(); ++i){
+    // std::cout<<" Hy= "<<Hy[i]<< " < " << h_[i] << std::endl;    
+    // if(Hy[i] > h_[i])
+    //   std::cout<<" Hy= "<<Hy[i]<< " < " << h_[i] << std::endl;    
+  // }
+
+  Eigen::VectorXd w, htmp;
+  double alpha = mPlanParam->robotMass_/mPlanParam->timeHorizon_/mPlanParam->timeHorizon_;
+  double t=0.;
+  for(int cid(0); cid<3; cid++){
+    t=0.;
+    for(int tt(0); tt<10; ++tt){
+    
+      w = alpha* PwsSequence_[cid].getW(t,y);
+      std::cout<<tt<<" w = " << w.transpose()<< std::endl;
+      std::cout<<tt<<" w-afm = " << (w - ASequence_[cid]* FmSequence_[cid]).transpose()<< std::endl;
+      htmp = UavSequence_[cid]* (w - ASequence_[cid]* FmSequence_[cid]);
+      t = t+0.1;
+
+      for(int i(0); i<htmp.size(); ++i){
+        if(htmp[i] > 0.0)
+          std::cout<<tt<<" htmp["<<i<< "]=" << htmp[i] << std::endl;
+      }
+    }
+  }
+
 
   
 }

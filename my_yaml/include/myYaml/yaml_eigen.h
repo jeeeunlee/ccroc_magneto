@@ -1,4 +1,5 @@
 #pragma once
+#pragma GCC diagnostic ignored "-Wsign-compare"
 
 #include <type_traits>
 #include <iomanip>

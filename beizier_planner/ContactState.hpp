@@ -1,4 +1,5 @@
 #pragma once
+#pragma GCC diagnostic ignored "-Wreorder"
 
 #include <eigen3/Eigen/Eigen>
 #include <array>

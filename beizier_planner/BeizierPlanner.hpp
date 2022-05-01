@@ -1,4 +1,5 @@
 #pragma once
+#pragma GCC diagnostic ignored "-Wunused-variable"
 
 #include "my_util/IOUtilities.hpp"
 #include "beizier_planner/RobotModel.hpp"
@@ -24,7 +25,7 @@ class BeizierPlannerParameter{
   double gravity_, robotMass_, timeHorizon_;
   int numActEEfs_;
 
-  Eigen::Vector3d comStart_, comGoal_;
+  Eigen::Vector3d comStart_, comGoal_, gravVec_;
 
 };
 
@@ -44,9 +45,12 @@ class BeizierPlanner{
     void buildFrictionCones();
     void solveDD();
     void buildInequalities();
+    void solveQP();
     
 
   protected:
+    cTimer timer_;
+
     BeizierPlannerParameter* mPlanParam;
     
     std::array<Eigen::MatrixXd, 3> ASequence_;
@@ -60,6 +64,7 @@ class BeizierPlanner{
     std::array<wBeizier, 3> PwsSequence_;
     std::array<double, 4> timeSequence_;
 
-
+    Eigen::MatrixXd H_;
+    Eigen::VectorXd h_;
 
 };

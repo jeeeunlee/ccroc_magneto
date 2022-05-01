@@ -30,6 +30,8 @@ for i=1:n-2
     ddc = ddc + bernsteinbasis(n-3,i-1)*t^(i-1)*(1-t)^(n-2-i)*(ps(i+2,:)-2*ps(i+1,:)+ps(i,:))';
 end
 
+syms T2 real;
+
 w = [ddc - [0;0;g]; cross(c,ddc-[0;0;g]) ];
 
 

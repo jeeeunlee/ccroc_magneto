@@ -67,7 +67,7 @@ optimization:
     ############################
     # Configuration parameters #
     ############################
-    gravity: 9.81
+    gravity: 9.81 #9.81 # 9.81
     robot_mass: 5.78357    
     friction_cone: LinearCone  # Types: LinearCone, SocCone #
     torque_range: [-0.1, 0.1]
